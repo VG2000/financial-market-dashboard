@@ -1,0 +1,13 @@
+{% load static %}
+{% csrf_token %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Market Dashboard</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="{% static 'main.js' %}"></script>
+  </body>
+</html>
