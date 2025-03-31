@@ -5,7 +5,7 @@ import path from "path";
 import tailwindcss from "@tailwindcss/vite";
 
 export default defineConfig({
-  base: "/static/frontend/", // Match Django's static path
+  base: "/static/", // Match Django's static path
 
   plugins: [react(), tailwindcss()],
 
@@ -13,12 +13,6 @@ export default defineConfig({
     outDir: "../backend/frontend", // Output to Django staticfiles
     emptyOutDir: true,
     sourcemap: true,
-    rollupOptions: {
-      input: path.resolve(__dirname, "index.html"),
-      output: {
-        entryFileNames: "main.js", // Optional: disable hashing for simplicity
-      },
-    },
   },
 
   resolve: {
