@@ -1,79 +1,111 @@
 import React from "react";
 import BondTable from "../components/BondTable";
+import {
+  useGetBondsQuery,
+  useRefreshBondDataMutation,
+} from "../features/bonds/BondApi";
 import { Bond } from "../types";
-import { useRefreshBondDataMutation } from "../features/bonds/BondApi";
 
-const sampleBonds: Bond[] = [
-  {
-    region: "europe",
-    country: "germany",
-    maturity: "10Y",
-    yield_rate: 2.5,
-    price_change_day: 0.08,
-    percentage_week: 0.0012,
-    percentage_month: 0.0025,
-    percentage_year: 0.0233,
-    date: "2025-03-28",
-    last_updated: "2025-03-28T09:00:00Z",
-  },
-];
+const MATURITY_ORDER = ["2y", "5y", "10y"];
+
+const groupBondsByCountry = (bonds: Bond[]): Record<string, Bond[]> => {
+  const grouped = bonds.reduce((acc, bond) => {
+    const country = bond.country.toUpperCase();
+    if (!acc[country]) {
+      acc[country] = [];
+    }
+    acc[country].push(bond);
+    return acc;
+  }, {} as Record<string, Bond[]>);
+
+  Object.keys(grouped).forEach((country) => {
+    grouped[country].sort((a, b) => {
+      const indexA = MATURITY_ORDER.indexOf(a.maturity.toLowerCase());
+      const indexB = MATURITY_ORDER.indexOf(b.maturity.toLowerCase());
+      return indexA - indexB;
+    });
+  });
+
+  return grouped;
+};
 
 const Home: React.FC = () => {
-  const [refreshBondData, { isLoading, isSuccess, isError }] = useRefreshBondDataMutation();
+  const {
+    data: bonds = [],
+    isLoading: isBondsLoading,
+    isError: isBondsError,
+  } = useGetBondsQuery();
+  const [refreshBondData, { isLoading, isSuccess, isError }] =
+    useRefreshBondDataMutation();
+
+  const groupedBonds = groupBondsByCountry(bonds);
 
   return (
-    <div className="min-h-screen bg-gray-100 p-6 space-y-10">
-      <header className="text-center">
-        <h1 className="text-4xl font-bold text-blue-600">Market Dashboard</h1>
-        <p className="text-sm text-gray-600">Live insights across asset classes</p>
-      </header>
+    <div className="p-4 bg-gray-100 min-h-screen flex flex-col items-center">
+      <h1 className="text-2xl md:text-3xl font-bold text-gray-800 text-center">
+        Financial Markets Dashboard
+      </h1>
 
-      <section className="flex justify-center">
+      {/* Refresh Button & Status */}
+      <div className="mt-2 flex flex-col items-center gap-2">
         <button
           onClick={() => refreshBondData()}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
           disabled={isLoading}
         >
           {isLoading ? "Refreshing Bond Data..." : "Refresh Bond Data"}
         </button>
-      </section>
+        {isSuccess && (
+          <p className="text-green-600 text-sm font-medium">
+            ✅ Bond data refreshed successfully!
+          </p>
+        )}
+        {isError && (
+          <p className="text-red-600 text-sm font-medium">
+            ⚠️ Error refreshing bond data.
+          </p>
+        )}
+      </div>
 
-      {isSuccess && (
-        <p className="text-center text-green-600 font-medium">
-          ✅ Bond data refreshed successfully!
-        </p>
-      )}
-      {isError && (
-        <p className="text-center text-red-600 font-medium">
-          ⚠️ Error refreshing bond data.
-        </p>
-      )}
+      {/* Dashboard Cards Container */}
+      <div className="w-full max-w-screen-2xl flex flex-col lg:flex-row gap-6 mt-6">
+        {/* ✅ Bond Markets Card */}
+        <div className="flex-1 min-w-[300px] space-y-4">
+          {isBondsLoading && (
+            <p className="text-gray-500 italic">Loading bond data...</p>
+          )}
+          {isBondsError && (
+            <p className="text-red-600">Error loading bond data.</p>
+          )}
+          {!isBondsLoading &&
+            !isBondsError &&
+            Object.entries(groupedBonds).map(([country, bonds]) => (
+              <BondTable key={country} title={`${country} Bonds`} bonds={bonds} />
+            ))}
+        </div>
 
-      {/* ✅ Bonds */}
-      <section>
-        <h2 className="text-lg font-semibold text-gray-800 mb-2">Bonds</h2>
-        <BondTable title="Euro Bonds" bonds={sampleBonds} />
-      </section>
+        {/* ⏳ Future Market Cards */}
+        <div className="flex-1 min-w-[300px] space-y-4">
+          <div className="bg-white shadow rounded-lg p-4">
+            <h2 className="text-lg font-semibold text-gray-800 mb-2">
+              Commodities
+            </h2>
+            <div className="text-gray-400 italic">Coming soon...</div>
+          </div>
 
-      {/* ⏳ Placeholder Sections for future asset classes */}
+          <div className="bg-white shadow rounded-lg p-4">
+            <h2 className="text-lg font-semibold text-gray-800 mb-2">Stocks</h2>
+            <div className="text-gray-400 italic">Coming soon...</div>
+          </div>
 
-      {/* Commodities */}
-      <section>
-        <h2 className="text-lg font-semibold text-gray-800 mb-2">Commodities</h2>
-        <div className="text-gray-400 italic">Coming soon...</div>
-      </section>
-
-      {/* Stocks */}
-      <section>
-        <h2 className="text-lg font-semibold text-gray-800 mb-2">Stocks</h2>
-        <div className="text-gray-400 italic">Coming soon...</div>
-      </section>
-
-      {/* Crypto */}
-      <section>
-        <h2 className="text-lg font-semibold text-gray-800 mb-2">Cryptocurrencies</h2>
-        <div className="text-gray-400 italic">Coming soon...</div>
-      </section>
+          <div className="bg-white shadow rounded-lg p-4">
+            <h2 className="text-lg font-semibold text-gray-800 mb-2">
+              Cryptocurrencies
+            </h2>
+            <div className="text-gray-400 italic">Coming soon...</div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

@@ -20,13 +20,12 @@ const BondTable: React.FC<BondTableProps> = ({ title, bonds }) => {
               <th className="text-right p-2 font-medium">1W</th>
               <th className="text-right p-2 font-medium">1M</th>
               <th className="text-right p-2 font-medium">1Y</th>
-              <th className="text-right p-2 font-medium">Date</th>
             </tr>
           </thead>
           <tbody>
             {bonds.map((bond, index) => (
               <tr
-                key={`${bond.country}-${bond.maturity}-${bond.date}`}
+                key={`${bond.country}-${bond.maturity}`}
                 className={`border-b ${
                   index % 2 === 0 ? "bg-gray-50" : "bg-white"
                 } hover:bg-gray-100`}
@@ -58,9 +57,6 @@ const BondTable: React.FC<BondTableProps> = ({ title, bonds }) => {
                 </td>
                 <td className="p-2 text-right">
                   {(bond.percentage_year * 100).toFixed(2)}%
-                </td>
-                <td className="p-2 text-right">
-                  {new Date(bond.date).toLocaleDateString()}
                 </td>
               </tr>
             ))}
