@@ -4,7 +4,7 @@ class Bond(models.Model):
     region = models.CharField(max_length=50)
     country = models.CharField(max_length=50)
     maturity = models.CharField(max_length=10)
-    
+
     yield_rate = models.DecimalField(max_digits=6, decimal_places=4)         # 4.1501
     price_change_day = models.DecimalField(max_digits=6, decimal_places=4)   # 0.0819
 
@@ -12,12 +12,10 @@ class Bond(models.Model):
     percentage_month = models.DecimalField(max_digits=5, decimal_places=4)   # 0.0027
     percentage_year = models.DecimalField(max_digits=5, decimal_places=4)    # 0.0254
 
-    date = models.DateField()  # parsed from "2022:10:25"
-
     last_updated = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"{self.country.upper()} {self.type} @ {self.date}"
+        return f"{self.country.upper()} {self.maturity}"
 
 
 
